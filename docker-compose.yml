@@ -1,0 +1,72 @@
+version: "3.7"
+services:
+  test_auth_app:
+    build:
+      args:
+        user: testauthfinal
+        uid: 1016
+      context: ./
+      dockerfile: Dockerfile
+    image: test_auth_app
+    container_name: test_auth_app
+    restart: unless-stopped
+    working_dir: /var/www/html/
+    volumes:
+      - ./:/var/www/html/
+      - ./php/laravel.ini:/usr/local/etc/php/conf.d/laravel.ini
+    env_file:
+      - .env
+    networks:
+      - test_auth
+
+  test_auth_db:
+    image: mysql:5.7
+    container_name: test_auth_db
+    restart: unless-stopped
+    ports:
+      - 4704:3306
+    volumes:
+      - testauthdbdata:/var/lib/mysql
+      - ./mysql/my.cnf:/etc/mysql/my.cnf
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: prod
+      SERVICE_NAME: prod_mysql
+    networks:
+      - test_auth
+
+  test_auth_nginx:
+    image: nginx:alpine
+    container_name: test_auth_nginx
+    restart: unless-stopped
+    ports:
+      - 4705:80
+      - 4706:443
+    volumes:
+      - ./:/var/www/html/
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ./nginx/ssl/:/etc/nginx/ssl/
+    networks:
+      - test_auth
+  
+  test_auth_redis:
+    image: redis:5
+    container_name: test_auth_redis
+    restart: unless-stopped
+    ports:
+      - 4707:6379
+    volumes:
+      - testauthredisdata:/data
+    networks:
+      - test_auth
+
+networks:
+  test_auth:
+    driver: bridge
+
+volumes:
+  testauthdbdata:
+  testauthredisdata:

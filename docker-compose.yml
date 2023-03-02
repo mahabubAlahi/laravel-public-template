@@ -48,7 +48,6 @@ services:
     volumes:
       - ./:/var/www/html/
       - ./nginx/conf.d/:/etc/nginx/conf.d/
-      - ./nginx/ssl/:/etc/nginx/ssl/
     networks:
       - test_auth
   
